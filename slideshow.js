@@ -1,12 +1,13 @@
-
 (function(window){
 
 
     /*===== Namespace Shared Global =====*/
+
     var controller;
 
 
     /*===== SlideShow Constructor =====*/
+
     var slideShow = function(context, config) {
         this.setContext(context);
         this.setConfig(config);
@@ -14,6 +15,7 @@
 
 
     /*===== SlideShow Prototype Properties (Defaults) =====*/
+
     slideShow.prototype.delay = 3000;
     slideShow.prototype.transition = 300;
 
@@ -182,11 +184,18 @@
 
                 if (row.image) {
 
+                    // Create a record
+                    var slide = {
+                        src: row.image
+                    };
+
+                    // Add delay if set
+                    if (row.delay) {
+                        slide.delay = row.delay;
+                    }
+
                     // Add a slide
-                    this.slides.push({
-                        src: row.image,
-                        delay: row.delay ? row.delay : this.delay
-                    });
+                    this.slides.push(slide);
 
                     // Add the source to preloader list
                     if (!this.images[row.image]) {
@@ -204,11 +213,18 @@
                         }
                         image = image + row.type;
 
+                        // Create a record
+                        var slide = {
+                            src: image
+                        };
+
+                        // Add delay if set
+                        if (row.delay) {
+                            slide.delay = row.delay;
+                        }
+
                         // Add a slide
-                        this.slides.push({
-                            src: image,
-                            delay: row.delay ? row.delay : this.delay
-                        });
+                        this.slides.push(slide);
 
                         // Add the source to preloader list
                         if (!this.images[image]) {
@@ -218,11 +234,13 @@
                 }
             } else if (typeof(row) === "string") {
 
-                // Add to slides
-                this.slides.push({
-                    src: row,
-                    delay: this.delay
-                });
+                // Create a record
+                var slide = {
+                    src: row
+                };
+
+                // Add a slide
+                this.slides.push(slide);
 
                 // Add the source to preloader list
                 if (!this.images[row]) {
