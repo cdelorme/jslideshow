@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+
+    <title>JS Slideshow</title>
+
+    <script src='slideshow.js' type='text/javascript'></script>
+    <script type='text/javascript'>
+        // Create onload method
+        window.addEventListener('load', function() {
+
+            // Test my test code
+            var my = ss(document.getElementsByTagName('body')[0],
+                {
+                    'controls': true,
+                    'images': [
+                        {
+                            start: 1,
+                            end: 3,
+                            type: '.png',
+                            delay: 4500
+                        },
+                        '4.png',
+                        '5.png',
+                        '6.png',
+                        {
+                            image: '7.png',
+                            delay: 10000
+                        }
+                    ]
+                }
+            );
+
+            my.start();
+        });
+
+    </script>
+
+    <style type='text/css'>
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+        }
+        body {
+            background: #000;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+        }
+
+    </style>
+
+</head>
+<body>
+</body>
+</html>
