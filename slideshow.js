@@ -94,6 +94,7 @@
             if (controller) {
                 window.removeEventListener(controller, this.keyboard);
                 window.removeEventListener(controller, this.mouse);
+                window.addEventListener(controller, this.info);
             }
 
             // Assign global window keyboard controls to this object
@@ -102,11 +103,87 @@
             // Mouse Controls
             window.addEventListener('click', this.mouse.bind(this));
 
+            // Add info listener
+            window.addEventListener('mousemove', this.info.bind(this));
+
             // Set new prototype controller
             controller = this;
         }
 
     };
+
+    slideShow.prototype.setNotify = function(notify) {
+        this.notify = notify;
+    }
+
+    slideShow.prototype.action = function(command) {
+        if (this.notify && this.notify.action) {
+
+            // TEST
+            console.log(command);
+
+            // Create the container
+            var container = document.createElement('div');
+            container.appendChild(document.createTextNode("Action: " + command));
+
+            // Apply Styles /w absolute position
+            container.style.position = "absolute";
+            container.style.width = "200px";
+            container.style.left = "50%";
+            container.style.marginLeft = "-100px";
+            container.style.marginTop = "-50px";
+            container.style.borderRadius = "8px";
+            container.style.background = "#fff";
+            container.style.zIndex = "10";
+            container.style['-webkit-transition'] = "opacity 1.5s linear";
+            // container.style.opacity = "0"
+
+            // Append to window /w timeout
+            document.getElementsByTagName('body')[0].appendChild(container);
+
+            // Set timeout to allow fade, and remove element
+            // setTimeout(function() {
+            //     container.parentNode.removeChild(this);
+            //     delete(container);
+            // }, 1500);
+        }
+    }
+
+    slideShow.prototype.info = function() {
+        if (this.notify && this.notify.info) {
+
+            // Get current image
+            var image = this.getCurrentImage();
+
+            // TEST
+            console.log(image);
+
+            // Create the container
+            var container = document.createElement('div');
+            container.appendChild(document.createTextNode("Image: " + image.src));
+
+            // Apply Styles /w absolute position
+            container.style.position = "absolute";
+            container.style.width = "200px";
+            container.style.left = "50%";
+            container.style.marginLeft = "-100px";
+            container.style.top = "5px";
+            container.style.borderRadius = "8px";
+            container.style.background = "#fff";
+            container.style.zIndex = "10";
+            container.style['-webkit-transition'] = "opacity 1.5s linear";
+            // container.style.opacity = "0"
+
+            // Append to window /w timeout
+            document.getElementsByTagName('body')[0].appendChild(container);
+
+            // Set timeout to allow fade, and remove element
+            // setTimeout(function() {
+            //     container.parentNode.removeChild(this);
+            //     delete(container);
+            // }, 1500);
+        }
+    }
 
     slideShow.prototype.keyboard = function(e) {
         if (e.keyCode) {
@@ -115,14 +192,26 @@
                 // pause or resume with toggle
                 this.toggle();
 
+                // Notify Action
+                if (this.running) {
+                    this.action('Resumed');
+                } else {
+                    this.action('Paused');
+                }
             } else if (e.keyCode == 37) {
 
                 // Go back (left arrow)
                 this.backward();
+
+                // Notify Action
+                this.action('Previous');
             } else if (e.keyCode == 39) {
 
                 // Go forward (right arrow)
                 this.forward();
+
+                // Notify Action
+                this.action('Next');
             }
         }
     };
