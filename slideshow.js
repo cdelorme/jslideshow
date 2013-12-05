@@ -436,7 +436,21 @@
 
             // Set running status
             this.running = true;
-            this.forward();
+
+            if (typeof(this.index) !== "undefined") {
+
+                // Resume from paused state
+                this.interval = setTimeout(function() {
+                    if (this.running) {
+                        this.clear();
+                        this.forward();
+                    }
+                }.bind(this), this.getDelay());
+            } else {
+
+                // Begin slideshow
+                this.forward();
+            }
         }
     };
 
