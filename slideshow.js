@@ -139,10 +139,6 @@
 
             // Set new prototype controller
             controller = this;
-        } else {
-
-            // Implicitly turn off actions
-            this.notify.action = false;
         }
     };
 
