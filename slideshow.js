@@ -18,6 +18,21 @@
 
     slideShow.prototype.delay = 3000;
     slideShow.prototype.transition = 300;
+    slideShow.prototype.notify = {
+        styles: {
+            'position': 'absolute',
+            'width': '200px',
+            'textAlign': 'center',
+            'left': '50%',
+            'top': '5px',
+            'padding': '4px',
+            'background': '#fff',
+            'marginLeft': '-100px',
+            'borderRadius': '8px',
+            'zIndex': '10',
+            '-webkit-transition': 'opacity 0.5s linear'
+        }
+    }
 
 
     /*===== SlideShow Prototype Methods =====*/
@@ -87,15 +102,34 @@
         return slide && slide.delay ? slide.delay : this.delay;
     };
 
-    slideShow.prototype.setControls = function(yes) {
+    slideShow.prototype.setControls = function(controls) {
+        this.controls = controls
 
-        if (yes) {
-            // Check for existing controller & remove events
-            if (controller) {
+        // Begin Complex Logic Tree
+        if (controller) {
+            if (this.controls) {
+                if (controller !== this) {
+
+                    // Remove events
+                    window.removeEventListener(controller, this.keyboard);
+                    window.removeEventListener(controller, this.mouse);
+                }
+
+                // Assign global window keyboard controls to this object
+                window.addEventListener('keyup', this.keyboard.bind(this));
+
+                // Mouse Controls
+                window.addEventListener('click', this.mouse.bind(this));
+
+                // Set new prototype controller
+                controller = this;
+            } else if (controller === this) {
+
+                // Remove events
                 window.removeEventListener(controller, this.keyboard);
                 window.removeEventListener(controller, this.mouse);
-                window.addEventListener(controller, this.info);
             }
+        } else if (this.controls) {
 
             // Assign global window keyboard controls to this object
             window.addEventListener('keyup', this.keyboard.bind(this));
@@ -103,87 +137,71 @@
             // Mouse Controls
             window.addEventListener('click', this.mouse.bind(this));
 
-            // Add info listener
-            window.addEventListener('mousemove', this.info.bind(this));
-
             // Set new prototype controller
             controller = this;
-        }
+        } else {
 
+            // Implicitly turn off actions
+            this.notify.action = false;
+        }
     };
 
     slideShow.prototype.setNotify = function(notify) {
+
+        // If no styles, apply defaults
+        if (!notify.styles) {
+            notify.styles = this.notify.styles
+        }
+
+        // Apply notify
         this.notify = notify;
-    }
+
+        // Create Display Element
+        this.display = document.createElement('div');
+        this.display.appendChild(document.createTextNode(''));
+
+        // Apply styles
+        for (style in this.notify.styles) {
+            this.display.style[style] = this.notify.styles[style];
+        }
+
+        // Set 0 opacity as a default invisible
+        this.display.style.opacity = "0";
+
+        // Append after this.image
+        if (this.image.parentNode) {
+            this.image.parentNode.insertBefore(this.display, this.image.nextSibling);
+        }
+
+        // attach or remove info events
+        if (this.notify.info) {
+            this.image.addEventListener('mouseover', this.info.bind(this));
+            this.image.addEventListener('mouseout', this.fadeDisplay.bind(this));
+        } else {
+            this.image.removeEventListener('mouseover', this.info);
+            this.image.removeEventListener('mouseout', this.fadeDisplay);
+        }
+
+        // if action events, implicitly activate control
+        if (this.notify.actions) {
+            this.setControls(true);
+        }
+    };
+
+    slideShow.prototype.fadeDisplay = function() {
+        this.display.style.opacity = "0";
+    };
 
     slideShow.prototype.action = function(command) {
-        if (this.notify && this.notify.action) {
-
-            // TEST
-            console.log(command);
-
-            // Create the container
-            var container = document.createElement('div');
-            container.appendChild(document.createTextNode("Action: " + command));
-
-            // Apply Styles /w absolute position
-            container.style.position = "absolute";
-            container.style.width = "200px";
-            container.style.left = "50%";
-            container.style.marginLeft = "-100px";
-            container.style.marginTop = "-50px";
-            container.style.borderRadius = "8px";
-            container.style.background = "#fff";
-            container.style.zIndex = "10";
-            container.style['-webkit-transition'] = "opacity 1.5s linear";
-            // container.style.opacity = "0"
-
-            // Append to window /w timeout
-            document.getElementsByTagName('body')[0].appendChild(container);
-
-            // Set timeout to allow fade, and remove element
-            // setTimeout(function() {
-            //     container.parentNode.removeChild(this);
-            //     delete(container);
-            // }, 1500);
-        }
-    }
+        this.display.firstChild.data = "Action: " + command;
+        this.display.style.opacity = "1";
+        setTimeout(this.fadeDisplay.bind(this), 1000);
+    };
 
     slideShow.prototype.info = function() {
-        if (this.notify && this.notify.info) {
-
-            // Get current image
-            var image = this.getCurrentImage();
-
-            // TEST
-            console.log(image);
-
-            // Create the container
-            var container = document.createElement('div');
-            container.appendChild(document.createTextNode("Image: " + image.src));
-
-            // Apply Styles /w absolute position
-            container.style.position = "absolute";
-            container.style.width = "200px";
-            container.style.left = "50%";
-            container.style.marginLeft = "-100px";
-            container.style.top = "5px";
-            container.style.borderRadius = "8px";
-            container.style.background = "#fff";
-            container.style.zIndex = "10";
-            container.style['-webkit-transition'] = "opacity 1.5s linear";
-            // container.style.opacity = "0"
-
-            // Append to window /w timeout
-            document.getElementsByTagName('body')[0].appendChild(container);
-
-            // Set timeout to allow fade, and remove element
-            // setTimeout(function() {
-            //     container.parentNode.removeChild(this);
-            //     delete(container);
-            // }, 1500);
-        }
-    }
+        this.display.firstChild.data = "Image: " + this.getCurrentSlide().src;
+        this.display.style.opacity = "1";
+    };
 
     slideShow.prototype.keyboard = function(e) {
         if (e.keyCode) {
@@ -218,6 +236,9 @@
 
     slideShow.prototype.mouse = function() {
         this.forward();
+
+        // Notify Action
+        this.action('Next');
     };
 
     slideShow.prototype.setImages = function(images) {
@@ -496,6 +517,11 @@
                 // Set the new source & resize
                 this.image.src = slide.src;
                 this.resizeImage();
+
+                // Update display
+                if (this.display) {
+                    this.display.firstChild.data = "Image: " + slide.src;
+                }
 
                 // begin css3 fadein
                 this.image.style.opacity = "1";
