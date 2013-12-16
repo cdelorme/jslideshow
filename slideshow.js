@@ -189,9 +189,11 @@
     };
 
     slideShow.prototype.action = function(command) {
-        this.display.firstChild.data = "Action: " + command;
-        this.display.style.opacity = "1";
-        setTimeout(this.fadeDisplay.bind(this), 1000);
+        if (this.notify.actions) {
+            this.display.firstChild.data = "Action: " + command;
+            this.display.style.opacity = "1";
+            setTimeout(this.fadeDisplay.bind(this), 1000);
+        }
     };
 
     slideShow.prototype.info = function() {
@@ -393,33 +395,74 @@
         // For each existing record in this.images preload the source
         for (source in this.images) {
 
-            // Load each image
-            var image = new Image();
-            image.alt = source;
-            image.addEventListener('load', function() {
-                self.images[this.alt].height = this.height;
-                self.images[this.alt].width = this.width;
-                self.images[this.alt].src = this.src;
+            // If that image had already been loaded and thrown an error, skip it
+            if (!this.images[source].error) {
 
-                // Handle loading status
-                if (self.loading) {
-                    self.loading--;
-                } else {
-                    delete(self.loading);
+                // Load each image
+                var image = new Image();
 
-                    // if start was triggered, execute callback
-                    if (self.waiting) {
-                        delete(self.waiting);
-                        self.start();
+                // Reference to access original path name
+                image.alt = source;
+
+                // Set error handling for source & continue preloading
+                image.addEventListener('error', function(e) {
+                    e.preventDefault();
+                    self.remove(this.alt);
+                    self.images[this.alt].error = true
+                    self.preload();
+                });
+
+                // After loading we add to our list
+                image.addEventListener('load', function() {
+                    self.images[this.alt].height = this.height;
+                    self.images[this.alt].width = this.width;
+                    self.images[this.alt].src = this.src;
+
+                    // Handle loading status
+                    if (self.loading) {
+                        self.loading--;
+                    } else {
+                        delete(self.loading);
+
+                        // if start was triggered, execute callback
+                        if (self.waiting) {
+                            delete(self.waiting);
+                            self.start();
+                        }
                     }
-                }
 
-                // Remove event listener to free up resources
-                if (arguments && arguments.callee) {
-                    this.removeEventListener(this, arguments.callee);
+                    // Remove event listener to free up resources
+                    if (arguments && arguments.callee) {
+                        this.removeEventListener(this, arguments.callee);
+                    }
+                });
+
+                // load Source
+                image.src = source;
+            }
+        }
+    };
+
+    // Insert at optional position
+    slideShow.prototype.insert = function(url, pos) {
+        if (pos || pos === 0) {
+            this.slides.splice(pos, 0, url);
+        } else {
+            this.slides.push(url);
+        }
+    };
+
+    // Remove nth occurrence of the url
+    slideShow.prototype.remove = function(url, n) {
+        var track = 0;
+        for (var i in this.slides) {
+            if (this.slides[i].src == url) {
+                if (n && n > track) {
+                    track++;
+                } else {
+                    this.slides.splice(i, 1);
                 }
-            });
-            image.src = source;
+            }
         }
     };
 
