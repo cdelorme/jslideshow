@@ -40,6 +40,13 @@ The configuration looks like:
         ]
     };
 
+You can now add and remove images at runtime:
+
+    mySlideshow.insert(url);
+    mySlideshow.insert(url, 2); // insert after second index
+    mySlideshow.remove(url); // Remove first instance
+    mySlideshow.remove(url, 4); //Remove 4th instance of url
+
 With the reference variable you can set every value in the above config manually:
 
     mySlideShow.setContext(someDivOrBody);
