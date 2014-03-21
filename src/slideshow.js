@@ -393,33 +393,76 @@
         // for each existing record in this.images preload the source
         for (source in this.images) {
 
-            // load each image
-            var image = new Image();
-            image.alt = source;
-            image.addEventListener('load', function() {
-                self.images[this.alt].height = this.height;
-                self.images[this.alt].width = this.width;
-                self.images[this.alt].src = this.src;
+            // if image has already failed to load skip it
+            if (!this.images[source].error) {
 
-                // handle loading status
-                if (self.loading) {
-                    self.loading--;
-                } else {
-                    delete(self.loading);
+                // load each image
+                var image = new Image();
 
-                    // if start was triggered, execute callback
-                    if (self.waiting) {
-                        delete(self.waiting);
-                        self.start();
+                // reference to access original file name for removal process
+                image.alt = source;
+
+                // set error handling for source & continue preloading
+                image.addEventListener('error', function(e) {
+                    e.preventDefault();
+                    self.remove(this.alt);
+                    self.images[this.alt].error = true;
+                    self.preload();
+                });
+
+                // after loading we add to our list
+                image.addEventListener('load', function() {
+
+                    // extract size and source
+                    self.images[this.alt].height = this.height;
+                    self.images[this.alt].width = this.width;
+                    self.images[this.alt].src = this.src;
+
+                    // handle loading status
+                    if (self.loading) {
+                        self.loading--;
+                    } else {
+                        delete(self.loading);
+
+                        // if start was triggered, execute callback
+                        if (self.waiting) {
+                            delete(self.waiting);
+                            self.start();
+                        }
                     }
-                }
 
-                // remove event listener to free up resources
-                if (arguments && arguments.callee) {
-                    this.removeEventListener(this, arguments.callee);
+                    // remove event listener to free up resources
+                    if (arguments && arguments.callee) {
+                        this.removeEventListener(this, arguments.callee);
+                    }
+                });
+
+                // load source
+                image.src = source;
+            }
+        }
+    };
+
+    // insert at optional position
+    slideShow.prototype.insert = function(url, pos) {
+        if (pos || post === 0) {
+            this.slides.splice(pos, 0, url);
+        } else {
+            this.slides.push(url);
+        }
+    };
+
+    // remove the nth occurrence of the url (defaults to first)
+    slideShow.prototype.remove = function(url, n) {
+        var track = 0;
+        for (var i in this.slides) {
+            if (this.slides[i].src == url) {
+                if (n && n > track) {
+                    track++;
+                } else {
+                    this.slides.splice(i, 1);
                 }
-            });
-            image.src = source;
+            }
         }
     };
 
