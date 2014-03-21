@@ -53,11 +53,11 @@
 
     slideShow.prototype.getImage = function() {
 
-        // Create image if not yet exists
+        // create image if not yet exists
         if (!this.image) {
             this.image = new Image();
 
-            // Set CSS3 fade effect on image
+            // set CSS3 fade effect on image
             this.setImageTransition();
         }
 
@@ -70,10 +70,10 @@
 
     slideShow.prototype.setConfig = function(config) {
 
-        // Loop through all configuration values (or do nothing if null/empty)
+        // loop through all configuration values (or do nothing if null/empty)
         for (key in config) {
 
-            // Create an index to check for matching method and apply value
+            // create an index to check for matching method and apply value
             var method = "set" + key.charAt(0).toUpperCase() + key.slice(1);
             if (this[method]) {
                 this[method](config[key]);
@@ -87,7 +87,7 @@
     };
 
     slideShow.prototype.setDelay = function(delay) {
-        // Apply delay if valid and > 2xtransition (fade out & in)
+        // apply delay if valid and > 2xtransition (fade out & in)
         if (delay && delay > (2 * this.transition)) {
             this.delay = delay;
         }
@@ -95,76 +95,76 @@
 
     slideShow.prototype.getDelay = function() {
 
-        // Acquire current image if exists
+        // acquire current image if exists
         var slide = this.getCurrentSlide();
 
-        // Return the images delay, or the default
+        // return the images delay, or the default
         return slide && slide.delay ? slide.delay : this.delay;
     };
 
     slideShow.prototype.setControls = function(controls) {
         this.controls = controls
 
-        // Begin Complex Logic Tree
+        // begin Complex Logic Tree
         if (controller) {
             if (this.controls) {
                 if (controller !== this) {
 
-                    // Remove events
+                    // remove events
                     window.removeEventListener(controller, this.keyboard);
                     window.removeEventListener(controller, this.mouse);
                 }
 
-                // Assign global window keyboard controls to this object
+                // assign global window keyboard controls to this object
                 window.addEventListener('keyup', this.keyboard.bind(this));
 
-                // Mouse Controls
+                // add mouse controls
                 window.addEventListener('click', this.mouse.bind(this));
 
-                // Set new prototype controller
+                // set new prototype controller
                 controller = this;
             } else if (controller === this) {
 
-                // Remove events
+                // remove events
                 window.removeEventListener(controller, this.keyboard);
                 window.removeEventListener(controller, this.mouse);
             }
         } else if (this.controls) {
 
-            // Assign global window keyboard controls to this object
+            // assign global window keyboard controls to this object
             window.addEventListener('keyup', this.keyboard.bind(this));
 
-            // Mouse Controls
+            // add mouse controls
             window.addEventListener('click', this.mouse.bind(this));
 
-            // Set new prototype controller
+            // set new prototype controller
             controller = this;
         }
     };
 
     slideShow.prototype.setNotify = function(notify) {
 
-        // If no styles, apply defaults
+        // if no styles, apply defaults
         if (!notify.styles) {
             notify.styles = this.notify.styles
         }
 
-        // Apply notify
+        // apply notify
         this.notify = notify;
 
-        // Create Display Element
+        // create display element
         this.display = document.createElement('div');
         this.display.appendChild(document.createTextNode(''));
 
-        // Apply styles
+        // apply styles
         for (style in this.notify.styles) {
             this.display.style[style] = this.notify.styles[style];
         }
 
-        // Set 0 opacity as a default invisible
+        // set 0 opacity as a default invisible
         this.display.style.opacity = "0";
 
-        // Append after this.image
+        // append after this.image
         if (this.image.parentNode) {
             this.image.parentNode.insertBefore(this.display, this.image.nextSibling);
         }
@@ -206,7 +206,7 @@
                 // pause or resume with toggle
                 this.toggle();
 
-                // Notify Action
+                // notify action
                 if (this.running) {
                     this.action('Resumed');
                 } else {
@@ -214,17 +214,17 @@
                 }
             } else if (e.keyCode == 37) {
 
-                // Go back (left arrow)
+                // go back (left arrow)
                 this.backward();
 
-                // Notify Action
+                // notify action
                 this.action('Previous');
             } else if (e.keyCode == 39) {
 
                 // Go forward (right arrow)
                 this.forward();
 
-                // Notify Action
+                // notify Action
                 this.action('Next');
             }
         }
@@ -233,7 +233,7 @@
     slideShow.prototype.mouse = function() {
         this.forward();
 
-        // Notify Action
+        // notify Action
         this.action('Next');
     };
 
@@ -271,68 +271,68 @@
          *
          */
 
-        // Prepare slides
+        // prepare slides
         delete(this.slides);
         this.slides = [];
 
-        // Prepare Preloader Images
+        // prepare preloader images
         delete(this.images);
         this.images = {};
 
-        // Loop all supplied values, or do nothing
+        // loop all supplied values, or do nothing
         for (index in images) {
 
-            // Grab the record
+            // grab the record
             var row = images[index];
 
-            // Check for objects or string
+            // check for objects or string
             if (typeof(row) === "object") {
 
                 if (row.image) {
 
-                    // Create a record
+                    // create a record
                     var slide = {
                         src: row.image
                     };
 
-                    // Add delay if set
+                    // add delay if set
                     if (row.delay) {
                         slide.delay = row.delay;
                     }
 
-                    // Add a slide
+                    // add a slide
                     this.slides.push(slide);
 
-                    // Add the source to preloader list
+                    // add the source to preloader list
                     if (!this.images[row.image]) {
                         this.images[row.image] = {};
                     }
                 } else if (row.start && row.end && row.type) {
 
-                    // Iterate all images in range
+                    // iterate all images in range
                     for (var n = row.start; n <= row.end; n++) {
 
-                        // Assemble source name
+                        // assemble source name
                         var image = n;
                         if (row.prefix) {
                             image = row.prefix + image;
                         }
                         image = image + row.type;
 
-                        // Create a record
+                        // create a record
                         var slide = {
                             src: image
                         };
 
-                        // Add delay if set
+                        // add delay if set
                         if (row.delay) {
                             slide.delay = row.delay;
                         }
 
-                        // Add a slide
+                        // add a slide
                         this.slides.push(slide);
 
-                        // Add the source to preloader list
+                        // add the source to preloader list
                         if (!this.images[image]) {
                             this.images[image] = {};
                         }
@@ -340,22 +340,22 @@
                 }
             } else if (typeof(row) === "string") {
 
-                // Create a record
+                // create a record
                 var slide = {
                     src: row
                 };
 
-                // Add a slide
+                // add a slide
                 this.slides.push(slide);
 
-                // Add the source to preloader list
+                // add the source to preloader list
                 if (!this.images[row]) {
                     this.images[row] = {};
                 }
             }
         }
 
-        // Keep track of preloading status
+        // keep track of preloading status
         this.loading = this.getImageCount() - 1;
 
         // run preloader on processed images
@@ -368,7 +368,7 @@
 
     slideShow.prototype.getImageCount = function() {
 
-        // Get a count of the images using length of its keys
+        // get a count of the images using length of its keys
         return this.getImageKeys().length;
     };
 
@@ -387,13 +387,13 @@
 
     slideShow.prototype.preload = function() {
 
-        // External reference
+        // external reference
         var self = this;
 
-        // For each existing record in this.images preload the source
+        // for each existing record in this.images preload the source
         for (source in this.images) {
 
-            // Load each image
+            // load each image
             var image = new Image();
             image.alt = source;
             image.addEventListener('load', function() {
@@ -401,7 +401,7 @@
                 self.images[this.alt].width = this.width;
                 self.images[this.alt].src = this.src;
 
-                // Handle loading status
+                // handle loading status
                 if (self.loading) {
                     self.loading--;
                 } else {
@@ -414,7 +414,7 @@
                     }
                 }
 
-                // Remove event listener to free up resources
+                // remove event listener to free up resources
                 if (arguments && arguments.callee) {
                     this.removeEventListener(this, arguments.callee);
                 }
@@ -425,17 +425,17 @@
 
     slideShow.prototype.start = function() {
 
-        // If we are still loading prepare a callback
+        // if we are still loading prepare a callback
         if (this.loading) {
             this.waiting = true;
         } else if (!this.running && this.images) {
 
-            // Set running status
+            // set running status
             this.running = true;
 
             if (typeof(this.index) !== "undefined") {
 
-                // Resume from paused state
+                // resume from paused state
                 this.interval = setTimeout(function() {
                     if (this.running) {
                         this.clear();
@@ -444,7 +444,7 @@
                 }.bind(this), this.getDelay());
             } else {
 
-                // Begin slideshow
+                // begin slideshow
                 this.forward();
             }
         }
@@ -480,7 +480,7 @@
     slideShow.prototype.forward = function() {
         this.clear();
 
-        // If index is not set, or is >= max images, then set to -1
+        // if index is not set, or is >= max images, then set to -1
         if (typeof(this.index) === "undefined" || this.index == this.getSlidesCount() - 1) {
             this.index = -1;
         }
@@ -498,7 +498,7 @@
     slideShow.prototype.backward = function() {
         this.clear();
 
-        // If index is not set or less than 0, then set it to image count - 1
+        // if index is not set or less than 0, then set it to image count - 1
         if (!this.index || this.index < 0) {
             this.index = this.getSlidesCount();
         }
@@ -514,21 +514,21 @@
 
     slideShow.prototype.render = function() {
 
-        // Get image
+        // get image
         slide = this.getCurrentSlide();
 
         // begin css3 fadeout
         if (this.transition) {
             this.image.style.opacity = "0";
 
-            // Delay for the transition to complete
+            // delay for the transition to complete
             setTimeout(function() {
 
-                // Set the new source & resize
+                // set the new source & resize
                 this.image.src = slide.src;
                 this.resizeImage();
 
-                // Update display
+                // update display
                 if (this.display) {
                     this.display.firstChild.data = "Image: " + slide.src;
                 }
@@ -538,7 +538,7 @@
             }.bind(this), this.transition);
         } else {
 
-            // Set the new source & resize
+            // set the new source & resize
             this.image.src = slide.src;
             this.resizeImage();
         }
@@ -549,10 +549,10 @@
         // get window size
         var windowSize = this.getBoundingBox();
 
-        // Get image
+        // get image
         image = this.getCurrentImage();
 
-        // Get Ratios
+        // get Ratios
         var ratio = image.width / image.height;
         var windowRatio = windowSize.width / windowSize.height;
 
@@ -570,7 +570,7 @@
         return { 'width': window.innerWidth, 'height': window.innerHeight };
     };
 
-    // Make factory externally available
+    // make factory externally available
     window.ss = function(context, config) {
         return new slideShow(context, config);
     };
