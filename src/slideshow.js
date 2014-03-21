@@ -567,7 +567,22 @@
     };
 
     slideShow.prototype.getBoundingBox = function() {
-        return { 'width': window.innerWidth, 'height': window.innerHeight };
+
+        // set defaults
+        var width = 0;
+        var height = 0;
+
+        // if has parent use clientHeight and clientWidth else use window
+        var parent = this.parentNode;
+        if (parent) {
+            width = parent.clientWidth;
+            height = parent.clientHeight;
+        } else {
+            width = window.innerWidth;
+            height = window.innerHeight;
+        }
+
+        return { 'width': width, 'height': height };
     };
 
     // make factory externally available
