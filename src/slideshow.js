@@ -39,19 +39,35 @@
     Preloader.prototype.images = function(slideShow, images) {
         images.map(function(o) {
 
-            // don't preload the same image twice (because async...)
+            // don't preload same image twice
+            // @todo change this so we check cache-object for key, and if value is not null we attach to standard object, else we iterate & remove it
             if (typeof this.cache[o.image] !== "undefined") return;
             this.cache.push(o.image);
 
-            // load new image, and compare loaded against slideShow's image length
+            // replace this with document.createElement DOM abstraction method
             var img = new Image();
-            img.addEventListener('onload', function() {
+
+            // catch error events
+            img.addEventListener('error', function(e) {
+                e.preventDefault();
+                // remove image from slideshow.images via SlideShow.remove()
+            }.bind(this), false);
+
+            // catch load event
+            img.addEventListener('load', function() {
+
+                // may be removing context in favor of reference self, so we can use raw img object
+
+                // merge loaded & cache into object from array
+                // append this (where this = img dom object) to image path
                 this.loaded.push(o.image);
 
-                // curious if context will remain during long async process, testing required
+                // because the preloader is shared via prototype, change this to work with that
+                // also we want to (probably) append the actual image dom element to the slideShow images standard objects to simplify rendering a step further
                 if (this.loaded.length = slideShow.images.length) {
                     slideShow.options.ready = true;
                 }
+
             }, false).bind(this);
         }, this);
     };
@@ -121,8 +137,9 @@
     SlideShow.prototype.add = function(data) {
         this.insert(data, this.images.length);
     };
-    SlideShow.prototype.remove = function(idx) {
-        this.images.splice(idx, 1);
+    SlideShow.prototype.remove = function(o) {
+        // change this to check if 0 is numeric, and run for loop to remove first-instance by reference
+        this.images.splice(o, 1);
         if (this.options.index >= this.images.length) this.options.index = 0;
     };
     SlideShow.prototype.insert = function(data, idx) {
