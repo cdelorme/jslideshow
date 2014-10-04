@@ -104,6 +104,9 @@
                 this.options[i] = options[i];
             }
         }
+
+        // begin render loop immediately
+        this.render();
     }
 
     // composite utilities
@@ -120,26 +123,25 @@
         // settings
         delay: 3000,
         transition: 50,
-        time: 0,
-        index: 0
+        index: 0,
+        elapsed: 0,
+        updated: 0
     };
-
-    // states
-//    SlideShow.prototype.playing = false;
-//    SlideShow.prototype.ready = false;
-
-    // default settings
-//    SlideShow.prototype.delay = 3000;
-//    SlideShow.prototype.transition = 50;
-//    SlideShow.prototype.time = 0;
 
     // prototype methods
     SlideShow.prototype.add = function(data) {
         this.insert(data, this.images.length);
     };
-    SlideShow.prototype.remove = function(o) {
-        // change this to check if 0 is numeric, and run for loop to remove first-instance by reference
-        this.images.splice(o, 1);
+    SlideShow.prototype.remove = function(o, a) {
+        if (o === parseInt(o)) {
+            this.images.splice(o, 1);
+        } else {
+            var i = 0;
+            do {
+                if (this.images[i] === o) this.images.splice(i, 1);
+                i++;
+            } while (i < this.images.length && a)
+        }
         if (this.options.index >= this.images.length) this.options.index = 0;
     };
     SlideShow.prototype.insert = function(data, idx) {
@@ -154,12 +156,30 @@
     SlideShow.prototype.toggle = function() { this.options.playing = !this.options.playing; };
 
     SlideShow.prototype.render = function(e) {
-        // handle requestAnimationFrame loop?
+        if (
+                this.options.playing === true &&
+                (this.options.elapsed += Date.now() - this.options.updated) &&
+                (this.options.updated = Date.now()) &&
+                typeof this.images[this.options.index] !== "undefined" &&
+                this.options.elapsed >= this.images[this.options.index].delay) {
+
+            this.next();
+            // update context
+        }
+
+        var self = this;
+        w.requestAnimationFrame(function(e) {
+            self.render();
+        });
     }
 
-    // timed operations
-    SlideShow.prototype.next = function() {};
-    SlideShow.prototype.prev = function() {};
+    SlideShow.prototype.next = function() {
+        this.options.index = this.options.index + 1 >= this.images.length ? 0 : this.options.index + 1;
+    };
+
+    SlideShow.prototype.prev = function() {
+        this.options.index = this.options.index > 0 ? this.options.index - 1 : this.images.length - 1;
+    };
 
     // globally accessible factory
     window.slideShow = function(context, options, images) {
