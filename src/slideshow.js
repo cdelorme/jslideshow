@@ -19,6 +19,7 @@
         ready: false,
         controls: false,
         delay: 3000,
+        transition: 50,
         index: 0,
         elapsed: 0,
         updated: 0
@@ -87,7 +88,8 @@
             s.push({
                 src: data,
                 image: null,
-                delay: this.options.delay
+                delay: this.options.delay,
+                transition: this.options.transition
             });
         } else if (typeof data === 'object') {
             if (typeof data.type !== 'undefined' &&
@@ -97,14 +99,16 @@
                     s.push({
                         image: null,
                         src: (typeof data.prefix === 'undefined' ? '' : data.prefix) + i + (typeof data.type === 'undefined' ? '' : data.type),
-                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
+                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                        transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
                     });
                 }
             } else if (typeof data.image !== 'undefined') {
                 s.push({
                     src: data.image,
                     image: null,
-                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
+                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                    transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
                 });
             }
         }
@@ -129,7 +133,7 @@
 
     SlideShow.prototype.render = function(o) {
         var d = Date.now();
-        if (this.options.playing) {// state updates are unrelated to the actual render code
+        if (this.options.playing) {
             this.options.elapsed += (d - this.options.updated);
             if (this.options.elapsed >= this.images[this.options.index].delay) {
                 this.next();
@@ -148,6 +152,13 @@
             } else {
                 image.style.width = "100%";
                 image.style.height = "auto";
+            }
+            if (image.style.opacity === '') image.style.opacity = '0';
+            if (this.options.elapsed === (d - this.options.updated)) {
+                image.style['-webkit-transition'] = 'opacity ' + (this.images[this.options.index].transition / 1000) + 's linear';
+                image.style.opacity = '1';
+            } else if (image.style.opacity = '1' && this.options.elapsed >= (this.images[this.options.index].delay - this.images[this.options.index].transition)) {
+                image.style.opacity = '0';
             }
         }
         this.options.updated = d;
