@@ -42,20 +42,24 @@
             }
         }
 
+        // attach controls to UI
+        if (this.options.controls) Controls(this.context);
+
         // begin render loop immediately
-        this.render();
+        this.render(this);
 
         // console.log("testing playing");
         // this.play();
     }
 
     // static-shared preloader cache
-    SlideShow.prototype.cached = [];
+    SlideShow.prototype.cached = {};
 
     // defaults (states & settings)
     SlideShow.prototype.options = {
         playing: false,
         ready: false,
+        controls: false,
         delay: 3000,
         transition: 50,
         index: 0,
@@ -63,40 +67,49 @@
         updated: 0
     };
 
-    SlideShow.prototype.preload = function(images) {
-        // images.map(function(o) {
+    SlideShow.prototype.ready = function() {
+        var state = true;
+        for (var i in this.images) {
+            if (this.images[i].image === null) state = false;
+        }
+        return this.options.ready = state;
+    };
 
-        //     // don't preload same image twice
-        //     // @todo change this so we check cache-object for key, and if value is not null we attach to standard object, else we iterate & remove it
-        //     if (typeof this.cache[o.image] !== "undefined") return;
-        //     this.cache.push(o.image);
+    SlideShow.prototype.remove = function(o, a) {
+        if (o === parseInt(o)) {
+            this.images.splice(o, 1);
+        } else {
+            var i = 0;
+            var f = false;
+            do {
+                if (this.images[i] === o && (f = true)) this.images.splice(i, 1);
+                i++;
+            } while (i < this.images.length && (!f || a))
+        }
+        if (this.options.index >= this.images.length) this.options.index = 0;
+    };
 
-        //     // replace this with document.createElement DOM abstraction method
-        //     var img = new Image();
-
-        //     // catch error events
-        //     img.addEventListener('error', function(e) {
-        //         e.preventDefault();
-        //         // remove image from slideshow.images via SlideShow.remove()
-        //     }.bind(this), false);
-
-        //     // catch load event
-        //     img.addEventListener('load', function() {
-
-        //         // may be removing context in favor of reference self, so we can use raw img object
-
-        //         // merge loaded & cache into object from array
-        //         // append this (where this = img dom object) to image path
-        //         this.loaded.push(o.image);
-
-        //         // because the preloader is shared via prototype, change this to work with that
-        //         // also we want to (probably) append the actual image dom element to the slideShow images standard objects to simplify rendering a step further
-        //         if (this.loaded.length = slideShow.images.length) {
-        //             slideShow.options.ready = true;
-        //         }
-
-        //     }, false).bind(this);
-        // }, this);
+    SlideShow.prototype.preload = function(ss, images) {
+        if (! images instanceof Array) return;
+        images.map(function(o) {
+            if (typeof ss.cached[o.src] !== 'undefined' || ss.cached[o.src] === null && ss.remove(o)) return;
+            ss.cached[o.src] = o;
+            var img = document.createElement('img');
+            img.addEventListener('error', function(e) {
+                e.preventDefault();
+                ss.cached[o.src] = null;
+                ss.remove(o, true);
+                ss.ready();
+            });
+            img.addEventListener('load', function(e) {
+                for (var i in images) {
+                    if (images[i].src === o.src) images[i].image = this;
+                }
+                ss.ready();
+            });
+            img.src = o.src;
+        }, this);
+        console.log(ss.images);
     };
 
     SlideShow.prototype.parse = function(data) {
@@ -136,36 +149,23 @@
         return s;
     };
 
+    SlideShow.prototype.insert = function(data, idx) {
+        var images = this.parse(data);
+        this.images.splice.apply(this.images, [idx, 0].concat(images));
+        this.preload(this, images);
+    };
+
     SlideShow.prototype.add = function(data) {
         this.insert(data, this.images.length);
     };
 
-    SlideShow.prototype.remove = function(o, a) {
-        if (o === parseInt(o)) {
-            this.images.splice(o, 1);
-        } else {
-            var i = 0;
-            do {
-                if (this.images[i] === o) this.images.splice(i, 1);
-                i++;
-            } while (i < this.images.length && a)
-        }
-        if (this.options.index >= this.images.length) this.options.index = 0;
-    };
-
-    SlideShow.prototype.insert = function(data, idx) {
-        var images = this.parse(data);
-        this.images.splice.apply(this.images, [idx, 0].concat(images));
-        this.preload(images);
-    };
+    SlideShow.prototype.toggle = function() { this.options.playing = !this.options.playing; };
 
     SlideShow.prototype.play = function() { this.toggle(); };
 
     SlideShow.prototype.pause= function() { this.toggle(); };
 
-    SlideShow.prototype.toggle = function() { this.options.playing = !this.options.playing; };
-
-    SlideShow.prototype.render = function(e) {
+    SlideShow.prototype.render = function(o) {
         if (
                 this.options.playing === true &&
                 (this.options.elapsed += Date.now() - this.options.updated) &&
@@ -177,9 +177,8 @@
             console.log("update context");
         }
 
-        var self = this;
         w.requestAnimationFrame(function(e) {
-            self.render();
+            o.render(o);
         });
     }
 
