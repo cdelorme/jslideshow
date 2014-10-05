@@ -1,40 +1,44 @@
 <!doctype html>
 <html lang="en">
 <head>
-
     <meta charset='utf-8'>
     <title>Slideshow Demo</title>
-    <style type="text/css">
+    <style type='text/css'>
         * { margin: 0; padding: 0; }
         html, body { height: 100%; width: 100%; }
-        .footer { display: none; }
+        body {
+            background: #000;
+        }
+        .content {
+            width: 100%;
+            height: 100%;
+        }
+        .footer {
+            display: none;
+            height: 0;
+            width: 0;
+        }
         img {
+            display: block;
+            margin: 0 auto;
             cursor: none;
         }
     </style>
-
-
 </head>
 <body>
-
-    <div class='content' />
-
+    <div class='content'></div>
     <div class='footer'>
         <script type='text/javascript'>
             (function(w) {
-
-                // newer 100% async loading approach
                 var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true;
                 s.onload = function() {
-
-                    // create our slideshow
                     var context = document.getElementsByClassName("content")[0];
-                    var config = {};
-                    var ss = w.slideShow(context, config);
+                    var config = { controls: true };
+                    var images = [];// populate this
+                    var ss = w.slideShow(context, config, images);
                 };
                 s.src = 'src/slideshow.js';
                 var t = document.getElementsByTagName('script')[0]; t.parentNode.insertBefore(s, t);
-
             })(window);
         </script>
     </div>
