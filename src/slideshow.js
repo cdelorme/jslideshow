@@ -19,7 +19,6 @@
         ready: false,
         controls: false,
         delay: 3000,
-        transition: 50,
         index: 0,
         elapsed: 0,
         updated: 0
@@ -88,8 +87,7 @@
             s.push({
                 src: data,
                 image: null,
-                delay: this.options.delay,
-                transition: this.options.transition
+                delay: this.options.delay
             });
         } else if (typeof data === 'object') {
             if (typeof data.type !== 'undefined' &&
@@ -99,16 +97,14 @@
                     s.push({
                         image: null,
                         src: (typeof data.prefix === 'undefined' ? '' : data.prefix) + i + (typeof data.type === 'undefined' ? '' : data.type),
-                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
-                        transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
                     });
                 }
             } else if (typeof data.image !== 'undefined') {
                 s.push({
                     src: data.image,
                     image: null,
-                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
-                    transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
                 });
             }
         }
@@ -138,18 +134,6 @@
             if (this.options.elapsed >= this.images[this.options.index].delay) {
                 this.next();
             }
-            if (this.context.childNodes.length > 0 && typeof this.images[this.options.index].transition !== 'undefined') {
-
-/*
-What are the two cases?
-
-*/
-                // if (this.options.elapsed)
-
-                // transition logic /w state timing?
-                // do a thing?
-            }
-
         }
         if (this.options.ready) {
             var image = this.images[this.options.index].image;
