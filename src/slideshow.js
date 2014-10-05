@@ -126,11 +126,11 @@
     SlideShow.prototype.pause= function() { this.toggle(); };
 
     SlideShow.prototype.render = function(s) {
-        var d = Date.now();
-        var o = s.images[s.options.index];
-        if (s.options.playing && (s.options.elapsed += (d - s.options.updated)) && s.options.elapsed >= o.delay) s.next();
-        if (s.options.ready) {
+        if (s.ready) {
+            var d = Date.now();
+            var o = s.images[s.options.index];
             var i = o.image;
+            if (s.options.playing && (s.options.elapsed += (d - s.options.updated)) && s.options.elapsed >= o.delay) s.next();
             if (s.context.childNodes.length === 0) { s.context.appendChild(i); }
             else if (s.context.childNodes[0] !== i) { s.context.replaceChild(i, s.context.childNodes[0]); }
             if (i.width / i.height < s.context.clientWidth / s.context.clientHeight) { i.style.height = "100%"; i.style.width = "auto"; }
