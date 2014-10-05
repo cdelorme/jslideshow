@@ -36,6 +36,7 @@
                     var config = { controls: true };
                     var images = [];// populate this
                     var ss = w.slideShow(context, config, images);
+                    ss.play();
                 };
                 s.src = 'src/slideshow.js';
                 var t = document.getElementsByTagName('script')[0]; t.parentNode.insertBefore(s, t);
