@@ -1,32 +1,6 @@
 (function(w) {
 
     /**
-     * UI Abstraction
-     */
-
-    function Dom() {};
-    Dom.prototype.elements = {
-        img: 'img'
-    };
-    // implementation pending
-
-
-    /**
-     * Controls
-     */
-
-    function Controls(context) {
-        w.addEventListener("keyUp", function(e) {
-            e.keyCode && {
-                32: context.toggle, // space
-                37: context.next, // right
-                39: context.prev // left
-            }[e.keyCode]();
-        }, false);
-    };
-
-
-    /**
      * SlideShow
      */
 
@@ -43,13 +17,10 @@
         }
 
         // attach controls to UI
-        if (this.options.controls) Controls(this.context);
+        if (this.options.controls) this.controls(this);
 
         // begin render loop immediately
         this.render(this);
-
-        // console.log("testing playing");
-        // this.play();
     }
 
     // static-shared preloader cache
@@ -61,10 +32,18 @@
         ready: false,
         controls: false,
         delay: 3000,
-        transition: 50,
         index: 0,
         elapsed: 0,
         updated: 0
+    };
+
+    SlideShow.prototype.controls = function(s) {
+        w.addEventListener("keyup", function(e) {
+            if (!e.keyCode) return;
+            if (e.keyCode === 32) s.toggle();
+            if (e.keyCode === 37) s.prev();
+            if (e.keyCode === 39) s.next();
+        }, false);
     };
 
     SlideShow.prototype.ready = function() {
@@ -72,6 +51,7 @@
         for (var i in this.images) {
             if (this.images[i].image === null) state = false;
         }
+        // if (state) console.log(this.images);
         return this.options.ready = state;
     };
 
@@ -109,7 +89,6 @@
             });
             img.src = o.src;
         }, this);
-        console.log(ss.images);
     };
 
     SlideShow.prototype.parse = function(data) {
@@ -122,27 +101,24 @@
             s.push({
                 src: data,
                 image: null,
-                delay: this.options.delay,
-                transition: this.options.transition
+                delay: this.options.delay
             });
         } else if (typeof data === 'object') {
             if (typeof data.type !== 'undefined' &&
                 typeof data.start !== 'undefined' && data.start === parseInt(data.start) &&
                 typeof data.end !== 'undefined' && data.end === parseInt(data.end)) {
-                for (var i = data.start; i < data.end; i++) {
+                for (var i = data.start; i <= data.end; i++) {
                     s.push({
                         image: null,
                         src: (typeof data.prefix === 'undefined' ? '' : data.prefix) + i + (typeof data.type === 'undefined' ? '' : data.type),
-                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
-                        transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
                     });
                 }
             } else if (typeof data.image !== 'undefined') {
                 s.push({
                     src: data.image,
                     image: null,
-                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
-                    transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
                 });
             }
         }
@@ -166,17 +142,30 @@
     SlideShow.prototype.pause= function() { this.toggle(); };
 
     SlideShow.prototype.render = function(o) {
-        if (
-                this.options.playing === true &&
-                (this.options.elapsed += Date.now() - this.options.updated) &&
-                (this.options.updated = Date.now()) &&
-                typeof this.images[this.options.index] !== "undefined" &&
-                this.options.elapsed >= this.images[this.options.index].delay) {
-
-            this.next();
-            console.log("update context");
+        var d = Date.now();
+        if (this.options.playing) {// state updates are unrelated to the actual render code
+            this.options.elapsed += (d - this.options.updated);
+            if (this.options.elapsed >= this.images[this.options.index].delay) {
+                this.next();
+            }
+            console.log(this.options.index);
+        }
+        if (this.options.ready) {
+            var resize = false;
+            if (this.context.childNodes.length === 0) {
+                this.context.appendChild(this.images[this.options.index].image);
+                resize = true;
+            } else if (this.context.childNodes[0] !== this.images[this.options.index].image) {
+                this.context.replaceChild(this.images[this.options.index].image, this.context.childNodes[0]);
+                resize = true;
+            }
+            if (resize) {
+                // perform resizing logic
+            }
         }
 
+
+        this.options.updated = d;
         w.requestAnimationFrame(function(e) {
             o.render(o);
         });
@@ -184,10 +173,12 @@
 
     SlideShow.prototype.next = function() {
         this.options.index = this.options.index + 1 >= this.images.length ? 0 : this.options.index + 1;
+        this.options.elapsed = 0;
     };
 
     SlideShow.prototype.prev = function() {
         this.options.index = this.options.index > 0 ? this.options.index - 1 : this.images.length - 1;
+        this.options.elapsed = 0;
     };
 
 
