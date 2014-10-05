@@ -37,7 +37,7 @@
         for (var i in this.images) {
             if (this.images[i].image === null) state = false;
         }
-        return this.options.ready = state && this.images.length > 0;
+        return this.options.ready = this.images.length > 0 && state;
     };
 
     SlideShow.prototype.remove = function(o, a) {
@@ -126,8 +126,8 @@
     SlideShow.prototype.pause= function() { this.toggle(); };
 
     SlideShow.prototype.render = function(s) {
-        if (s.ready) {
-            var d = Date.now();
+        var d = Date.now();
+        if (s.options.ready) {
             var o = s.images[s.options.index];
             var i = o.image;
             if (s.options.playing && (s.options.elapsed += (d - s.options.updated)) && s.options.elapsed >= o.delay) s.next();
