@@ -130,13 +130,15 @@
         if (s.options.ready) {
             var o = s.images[s.options.index];
             var i = o.image;
+            var m = s.context.childNodes.length > 0 ? s.context.childNodes[0] : i.cloneNode();
             if (s.options.playing && (s.options.elapsed += (d - s.options.updated)) && s.options.elapsed >= o.delay) s.next();
-            if (s.context.childNodes.length === 0) { s.context.appendChild(i); }
-            else if (s.context.childNodes[0] !== i) { s.context.replaceChild(i, s.context.childNodes[0]); }
-            if (i.width / i.height < s.context.clientWidth / s.context.clientHeight) { i.style.height = "100%"; i.style.width = "auto"; }
-            else { i.style.width = "100%"; i.style.height = "auto"; }
-            if (s.options.elapsed === (d - s.options.updated)) { i.style['-webkit-transition'] = 'opacity ' + (o.transition / 1000) + 's linear'; i.style.opacity = '1'; }
-            else if (s.options.playing && i.style.opacity === '' || (i.style.opacity = '1' && s.options.elapsed >= (o.delay - o.transition))) { i.style.opacity = '0'; }
+            if (s.context.childNodes.length === 0) { m.style['-webkit-transition'] = 'opacity ' + (o.transition / 1000) + 's linear'; s.context.appendChild(m); }
+            var m = s.context.childNodes[0];
+            if (m.src !== i.src) { m.src = i.src; }
+            if (i.width / i.height < s.context.clientWidth / s.context.clientHeight) { m.style.height = "100%"; m.style.width = "auto"; }
+            else { m.style.width = "100%"; m.style.height = "auto"; }
+            if (s.options.elapsed === (d - s.options.updated)) { m.style.opacity = '1'; }
+            else if (s.options.playing && m.style.opacity === '' || (m.style.opacity = '1' && s.options.elapsed >= (o.delay - o.transition))) { m.style.opacity = '0'; }
         }
         s.options.updated = d;
         w.requestAnimationFrame(function() { s.render(s); });
