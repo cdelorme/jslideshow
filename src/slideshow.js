@@ -8,7 +8,7 @@
     Dom.prototype.elements = {
         img: 'img'
     };
-    // still totally incomplete (just started writing)
+    // implementation pending
 
 
     /**
@@ -25,69 +25,6 @@
         }, false);
     };
 
-
-    /**
-     * Preloader
-     */
-
-    function Preloader() {
-        this.cache = [];
-        this.loaded = [];
-    };
-
-    // a (probably) very broken preloader (syntax check & test)
-    Preloader.prototype.images = function(slideShow, images) {
-        images.map(function(o) {
-
-            // don't preload same image twice
-            // @todo change this so we check cache-object for key, and if value is not null we attach to standard object, else we iterate & remove it
-            if (typeof this.cache[o.image] !== "undefined") return;
-            this.cache.push(o.image);
-
-            // replace this with document.createElement DOM abstraction method
-            var img = new Image();
-
-            // catch error events
-            img.addEventListener('error', function(e) {
-                e.preventDefault();
-                // remove image from slideshow.images via SlideShow.remove()
-            }.bind(this), false);
-
-            // catch load event
-            img.addEventListener('load', function() {
-
-                // may be removing context in favor of reference self, so we can use raw img object
-
-                // merge loaded & cache into object from array
-                // append this (where this = img dom object) to image path
-                this.loaded.push(o.image);
-
-                // because the preloader is shared via prototype, change this to work with that
-                // also we want to (probably) append the actual image dom element to the slideShow images standard objects to simplify rendering a step further
-                if (this.loaded.length = slideShow.images.length) {
-                    slideShow.options.ready = true;
-                }
-
-            }, false).bind(this);
-        }, this);
-    };
-
-
-    /**
-     * Config Parser
-     */
-
-    function Parser() {};
-    Parser.prototype.parse = function(data) {
-        s = [];
-        // return standardized set of items
-        if (data instanceof Array) {
-            // .map
-        } else {
-            // single
-        }
-        return s;
-    };
 
     /**
      * SlideShow
@@ -107,20 +44,18 @@
 
         // begin render loop immediately
         this.render();
+
+        // console.log("testing playing");
+        // this.play();
     }
 
-    // composite utilities
-    SlideShow.prototype.parser = new Parser();
-    SlideShow.prototype.preloader = new Preloader();
+    // static-shared preloader cache
+    SlideShow.prototype.cached = [];
 
-    // defaults
+    // defaults (states & settings)
     SlideShow.prototype.options = {
-
-        // states
         playing: false,
         ready: false,
-
-        // settings
         delay: 3000,
         transition: 50,
         index: 0,
@@ -128,10 +63,83 @@
         updated: 0
     };
 
-    // prototype methods
+    SlideShow.prototype.preload = function(images) {
+        // images.map(function(o) {
+
+        //     // don't preload same image twice
+        //     // @todo change this so we check cache-object for key, and if value is not null we attach to standard object, else we iterate & remove it
+        //     if (typeof this.cache[o.image] !== "undefined") return;
+        //     this.cache.push(o.image);
+
+        //     // replace this with document.createElement DOM abstraction method
+        //     var img = new Image();
+
+        //     // catch error events
+        //     img.addEventListener('error', function(e) {
+        //         e.preventDefault();
+        //         // remove image from slideshow.images via SlideShow.remove()
+        //     }.bind(this), false);
+
+        //     // catch load event
+        //     img.addEventListener('load', function() {
+
+        //         // may be removing context in favor of reference self, so we can use raw img object
+
+        //         // merge loaded & cache into object from array
+        //         // append this (where this = img dom object) to image path
+        //         this.loaded.push(o.image);
+
+        //         // because the preloader is shared via prototype, change this to work with that
+        //         // also we want to (probably) append the actual image dom element to the slideShow images standard objects to simplify rendering a step further
+        //         if (this.loaded.length = slideShow.images.length) {
+        //             slideShow.options.ready = true;
+        //         }
+
+        //     }, false).bind(this);
+        // }, this);
+    };
+
+    SlideShow.prototype.parse = function(data) {
+        s = [];
+        if (data instanceof Array) {
+            for (var i in data) {
+                s = s.concat(this.parse(data[i]));
+            }
+        } else if (typeof data === 'string') {
+            s.push({
+                src: data,
+                image: null,
+                delay: this.options.delay,
+                transition: this.options.transition
+            });
+        } else if (typeof data === 'object') {
+            if (typeof data.type !== 'undefined' &&
+                typeof data.start !== 'undefined' && data.start === parseInt(data.start) &&
+                typeof data.end !== 'undefined' && data.end === parseInt(data.end)) {
+                for (var i = data.start; i < data.end; i++) {
+                    s.push({
+                        image: null,
+                        src: (typeof data.prefix === 'undefined' ? '' : data.prefix) + i + (typeof data.type === 'undefined' ? '' : data.type),
+                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                        transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                    });
+                }
+            } else if (typeof data.image !== 'undefined') {
+                s.push({
+                    src: data.image,
+                    image: null,
+                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                    transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
+                });
+            }
+        }
+        return s;
+    };
+
     SlideShow.prototype.add = function(data) {
         this.insert(data, this.images.length);
     };
+
     SlideShow.prototype.remove = function(o, a) {
         if (o === parseInt(o)) {
             this.images.splice(o, 1);
@@ -144,15 +152,17 @@
         }
         if (this.options.index >= this.images.length) this.options.index = 0;
     };
+
     SlideShow.prototype.insert = function(data, idx) {
-        var images = this.parser.parse(data);
-        this.images.splice(idx, 0, images);
-        this.preloader.images(this, images);
+        var images = this.parse(data);
+        this.images.splice.apply(this.images, [idx, 0].concat(images));
+        this.preload(images);
     };
 
-    // standard control methods
     SlideShow.prototype.play = function() { this.toggle(); };
+
     SlideShow.prototype.pause= function() { this.toggle(); };
+
     SlideShow.prototype.toggle = function() { this.options.playing = !this.options.playing; };
 
     SlideShow.prototype.render = function(e) {
@@ -164,7 +174,7 @@
                 this.options.elapsed >= this.images[this.options.index].delay) {
 
             this.next();
-            // update context
+            console.log("update context");
         }
 
         var self = this;
@@ -181,7 +191,11 @@
         this.options.index = this.options.index > 0 ? this.options.index - 1 : this.images.length - 1;
     };
 
-    // globally accessible factory
+
+    /**
+     * Global Accessibility
+     */
+
     window.slideShow = function(context, options, images) {
         var ss = new SlideShow(context, options);
         ss.add(images);
