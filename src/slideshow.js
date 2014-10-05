@@ -1,37 +1,25 @@
 (function(w) {
 
-    /**
-     * SlideShow
-     */
-
-    // constructor
     function SlideShow(context, options) {
         this.context = context;
         this.images = [];
-
-        // merge options with defaults
         for (var i in this.options) {
             if (typeof options[i] !== "undefined") {
                 this.options[i] = options[i];
             }
         }
-
-        // attach controls to UI
         if (this.options.controls) this.controls(this);
-
-        // begin render loop immediately
         this.render(this);
     }
 
-    // static-shared preloader cache
     SlideShow.prototype.cached = {};
 
-    // defaults (states & settings)
     SlideShow.prototype.options = {
         playing: false,
         ready: false,
         controls: false,
         delay: 3000,
+        transition: 50,
         index: 0,
         elapsed: 0,
         updated: 0
@@ -51,7 +39,6 @@
         for (var i in this.images) {
             if (this.images[i].image === null) state = false;
         }
-        // if (state) console.log(this.images);
         return this.options.ready = state;
     };
 
@@ -101,7 +88,8 @@
             s.push({
                 src: data,
                 image: null,
-                delay: this.options.delay
+                delay: this.options.delay,
+                transition: this.options.transition
             });
         } else if (typeof data === 'object') {
             if (typeof data.type !== 'undefined' &&
@@ -111,14 +99,16 @@
                     s.push({
                         image: null,
                         src: (typeof data.prefix === 'undefined' ? '' : data.prefix) + i + (typeof data.type === 'undefined' ? '' : data.type),
-                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
+                        delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                        transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
                     });
                 }
             } else if (typeof data.image !== 'undefined') {
                 s.push({
                     src: data.image,
                     image: null,
-                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay
+                    delay: typeof data.delay === 'undefined' ? this.options.delay : data.delay,
+                    transition: typeof data.transition === 'undefined' ? this.options.transition : data.transition
                 });
             }
         }
@@ -148,23 +138,34 @@
             if (this.options.elapsed >= this.images[this.options.index].delay) {
                 this.next();
             }
-            console.log(this.options.index);
+            if (this.context.childNodes.length > 0 && typeof this.images[this.options.index].transition !== 'undefined') {
+
+/*
+What are the two cases?
+
+*/
+                // if (this.options.elapsed)
+
+                // transition logic /w state timing?
+                // do a thing?
+            }
+
         }
         if (this.options.ready) {
-            var resize = false;
+            var image = this.images[this.options.index].image;
             if (this.context.childNodes.length === 0) {
-                this.context.appendChild(this.images[this.options.index].image);
-                resize = true;
-            } else if (this.context.childNodes[0] !== this.images[this.options.index].image) {
-                this.context.replaceChild(this.images[this.options.index].image, this.context.childNodes[0]);
-                resize = true;
+                this.context.appendChild(image);
+            } else if (this.context.childNodes[0] !== image) {
+                this.context.replaceChild(image, this.context.childNodes[0]);
             }
-            if (resize) {
-                // perform resizing logic
+            if (image.width / image.height < this.context.clientWidth / this.context.clientHeight) {
+                image.style.height = "100%";
+                image.style.width = "auto";
+            } else {
+                image.style.width = "100%";
+                image.style.height = "auto";
             }
         }
-
-
         this.options.updated = d;
         w.requestAnimationFrame(function(e) {
             o.render(o);
@@ -180,11 +181,6 @@
         this.options.index = this.options.index > 0 ? this.options.index - 1 : this.images.length - 1;
         this.options.elapsed = 0;
     };
-
-
-    /**
-     * Global Accessibility
-     */
 
     window.slideShow = function(context, options, images) {
         var ss = new SlideShow(context, options);
