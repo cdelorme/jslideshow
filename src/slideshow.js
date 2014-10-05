@@ -17,7 +17,7 @@
         ready: false,
         controls: false,
         delay: 3000,
-        transition: 50,
+        transition: 0,
         index: 0,
         elapsed: 0,
         updated: 0
