@@ -37,7 +37,7 @@
         for (var i in this.images) {
             if (this.images[i].image === null) state = false;
         }
-        return this.options.ready = state;
+        return this.options.ready = state && this.images.length > 0;
     };
 
     SlideShow.prototype.remove = function(o, a) {
