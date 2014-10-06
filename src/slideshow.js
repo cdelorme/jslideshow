@@ -121,9 +121,9 @@
 
     SlideShow.prototype.toggle = function() { this.options.playing = !this.options.playing; };
 
-    SlideShow.prototype.play = function() { this.toggle(); };
+    SlideShow.prototype.play = function() { this.options.playing = true; };
 
-    SlideShow.prototype.pause= function() { this.toggle(); };
+    SlideShow.prototype.pause= function() { this.options.playing = false; };
 
     SlideShow.prototype.render = function(s) {
         var d = Date.now();
