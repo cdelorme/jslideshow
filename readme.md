@@ -1,99 +1,91 @@
 
 # jslideshow
 
-A generic image slideshow with basic fading effects, using the newer immediate render mode design approach.
+A modern javascript image slideshow with no external dependencies.
 
 
 ## sales pitch
 
-This plugin aims to provide simple, dependency-free module that can be easily configured and efficiently process images.
+This module aims to deliver a simple dependency free solution for handling image slideshows.
 
-What it do:
+What it offers:
 
-- preload a list of images retaining order for rendering
-- cycles objects with simple application state management
-- uses requestAnimationFrame to update displayed contents
+- asynchronous image preloading
+- faded transitions
+- optional built-in controls /w easy to connect control methods for a custom interface
+
+Added benefits:
+
+- uses a modern immediate-rendering approach reducing the amount of code and improving the experience
+- less than 200 lines of uncompressed javascript
 
 
 ## Usage
 
-Grab a container object as the context:
+Grab any container object as the context:
 
     var context = document.getElementById("context");
 
-Create a configuration file with any of the following formats:
+Supply optional configuration:
 
-    var config = {
-        delay: 4600,
-        transition: 300,
-        control: true,
-        notify: {
-            actions: true,
-            info: true
+    var config = { control: true, delay: 4600, transition: 300 };
+
+Prepare a set of images with a variety of definitions that can use or override default configuration:
+
+    var images = [
+        '1.jpg',
+        {
+            image: '2.gif',
+            delay: 7800,
+            transition: 0
         },
-        images: [
-            'path/src.type',
-            {
-                image: 'path/src.type',
-                delay: 2500,
-                transition: 25
-            },
-            {
-                start: 1,
-                end: 25,
-                type: '.jpg',
-                prefix: 'path/img-',
-                delay: 7000,
-                transition: 0
-            }
-        ]
-    };
+        {
+            prefix: 'path/title-',
+            start: 1,
+            end: 25,
+            type: '.png',
+            delay: 2200,
+            transition: 50
+        },
+    ];
 
-You can use these to create an instance with:
+Create a slideshow instance:
+
+    var ss = window.slideShow(context, config, images);
+
+You can opt to supply images later, or even add to the existing roll of images:
 
     var ss = window.slideShow(context, config);
+    ss.add(images);
 
-You can operate the slideshow with these commands:
+You can also insert them at a specific index:
+
+    ss.insert(12, images);
+
+You can remove by index as well:
+
+    ss.remove(5);
+
+_Any changes to the set of images can be done during runtime, and will immediately be reflected by the slideshow._
+
+You can play, pause, or toggle the slideshows state with:
 
     ss.play();
-    ss.stop();
+    ss.pause();
     ss.toggle();
 
-_If you notice an initial delay when first playing this is normal.  The slideshow will not begin playing until the preloader process has finished._
+If controls are set, you can request the next and previous images or toggle the state with arrow keys and spacebar.  Alternatively you can assign your own controls to:
 
+    ss.next();
+    ss.prev();
 
-### configuration details
-
-@TODO
-
-
-### user controls
-
-A set of default use controls are available, but you can attach your own to the play/stop/toggle methods.
-
-The default controls capture spacebar as toggle, and arrow keys to move forwards and backwards.
-
-Optional info can be displayed in the context area.
-
-
-## technical details
-
-The code has several stages of operation:
-
-- configuration parsing
-- preloading
-- execution
-
-The parser will create a standardized set of objects using global and individual options.
-
-The preloader will identify unique image paths, and asynchronously create and load images.  It will keep a tally of these images to delay startup until they are finished.
-
-The execution process becomes incredibly simple by running requestAnimationFrame with a set of standard conditions to decide when to execute and when to make a change.
+_An initial delay may be evident when preloading large amounts of content.  This is normal, and if you have run `toggle()` or `play()` it will begin playing as soon as the process has finished._
 
 
 ## requirements
 
-This library requires a [`requestAnimationFrame`](http://caniuse.com/#feat=requestanimationframe) compatible browser.
+The code is not compatible with older browsers.
 
-The code is not compatible with older browsers, or divergent browsers like IE with older event methods.
+It depends on standardized `addEventListener` support.
 
+It depends on [`requestAnimationFrame`](http://caniuse.com/#feat=requestanimationframe) compatibility.
