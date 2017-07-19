@@ -10,14 +10,15 @@ This module aims to deliver a simple dependency free solution for handling image
 
 What it offers:
 
-- asynchronous image preloading
 - faded transitions
+- asynchronous image preloading
+- pauses automatically when window is inactive
 - optional built-in controls /w easy to connect control methods for a custom interface
 
 Added benefits:
 
-- uses a modern immediate-rendering approach reducing the amount of code and improving the experience
 - less than 200 lines of uncompressed javascript
+- uses a modern immediate-rendering approach reducing the amount of code and improving the experience
 
 
 ## Usage

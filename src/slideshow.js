@@ -123,7 +123,7 @@
 
     SlideShow.prototype.play = function() { this.options.playing = true; };
 
-    SlideShow.prototype.pause= function() { this.options.playing = false; };
+    SlideShow.prototype.pause = function() { this.options.playing = false; };
 
     SlideShow.prototype.render = function(s) {
         var d = Date.now();
@@ -154,9 +154,11 @@
         this.options.elapsed = 0;
     };
 
-    window.slideShow = function(context, options, images) {
+    w.slideShow = function(context, options, images) {
         var ss = new SlideShow(context, options);
         ss.add(images);
+        this.addEventListener("focus", function() { ss.play(); }, false);
+        this.addEventListener("blur", function() { ss.pause(); }, false);
         return ss;
     };
 
